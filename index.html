@@ -1,0 +1,377 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orbits Engineering Firm</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            min-width: 320px;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+        }
+
+        h1 {
+            margin: 0;
+            padding: 16px 20px;
+        }
+
+        #map {
+            height: calc(100vh - 160px);
+            height: calc(100dvh - 160px);
+            min-height: 0;
+        }
+
+        .attribute-panel {
+            position: absolute;
+            z-index: 1000;
+            top: 82px;
+            right: 16px;
+            width: min(230px, calc(100vw - 24px));
+            box-sizing: border-box;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            background: #ffffffed;
+            box-shadow: 0 8px 24px #0f172a24;
+            backdrop-filter: blur(8px);
+        }
+
+        .attribute-panel h2 {
+            margin: 0 0 8px;
+            color: #0f172a;
+            font-size: 15px;
+        }
+
+        .attribute-panel label {
+            display: block;
+            margin: 8px 0 4px;
+            color: #475569;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .attribute-panel input {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 7px 8px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            outline: none;
+            font: inherit;
+            font-size: 12px;
+        }
+
+        .attribute-panel input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px #2563eb22;
+        }
+
+        .attribute-panel button {
+            width: 100%;
+            margin-top: 10px;
+            padding: 8px;
+            border: 0;
+            border-radius: 6px;
+            background: #2563eb;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .attribute-panel button:hover {
+            background: #1d4ed8;
+        }
+
+        .attribute-panel .download-button {
+            display: block;
+            box-sizing: border-box;
+            margin-top: 7px;
+            padding: 7px 8px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            background: #f8fafc;
+            color: #334155;
+            text-align: center;
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .attribute-panel .download-button:hover {
+            background: #e2e8f0;
+        }
+
+        #selectedFeature {
+            margin: 9px 0 0;
+            color: #64748b;
+            font-size: 11px;
+            line-height: 1.4;
+        }
+
+        .attribute-taskbar {
+            position: fixed;
+            z-index: 1000;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            height: 96px;
+            box-sizing: border-box;
+            padding: 10px 18px 12px;
+            border-top: 1px solid #dbe2ea;
+            background: #f8fafc;
+            box-shadow: 0 -5px 20px #0f172a12;
+        }
+
+        .attribute-taskbar h2 {
+            margin: 0 0 6px;
+            color: #334155;
+            font-size: 12px;
+        }
+
+        #attributeTable {
+            width: min(560px, 100%);
+            border-collapse: collapse;
+            background: white;
+            font-size: 11px;
+        }
+
+        #attributeTable th,
+        #attributeTable td {
+            padding: 5px 8px;
+            border: 1px solid #e2e8f0;
+            text-align: left;
+            overflow-wrap: anywhere;
+        }
+
+        #attributeTable th {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        [hidden] {
+            display: none !important;
+        }
+
+        @media (max-width: 600px) {
+            h1 { padding: 10px 12px; font-size: 18px; }
+            #map { height: calc(100vh - 146px); height: calc(100dvh - 146px); }
+            .attribute-panel {
+                top: 58px;
+                right: 8px;
+                width: min(190px, calc(100vw - 16px));
+                padding: 9px;
+                border-radius: 8px;
+            }
+            .attribute-panel h2 { font-size: 13px; }
+            .attribute-panel input { padding: 6px; font-size: 16px; }
+            .attribute-panel button { margin-top: 7px; padding: 7px; }
+            .attribute-panel .download-button { margin-top: 5px; padding: 6px; }
+            .attribute-taskbar { height: 88px; padding: 7px 9px 8px; }
+            .attribute-taskbar h2 { margin-bottom: 4px; }
+            #attributeTable { width: 100%; font-size: 10px; }
+            #attributeTable th, #attributeTable td { padding: 4px 6px; }
+            .leaflet-top { top: 2px; }
+            .leaflet-left { left: 2px; }
+            .leaflet-control { margin: 6px !important; }
+        }
+
+        @media (max-width: 380px) {
+            h1 { font-size: 16px; }
+            .attribute-panel { width: 168px; }
+            .attribute-panel h2 { font-size: 12px; }
+            .attribute-panel label { margin-top: 6px; }
+        }
+
+        @media (max-height: 500px) {
+            h1 { padding-top: 6px; padding-bottom: 6px; font-size: 16px; }
+            #map { height: calc(100dvh - 116px); }
+            .attribute-taskbar { height: 76px; padding: 5px 9px; }
+            .attribute-panel { top: 48px; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Orbits Engineering Firm</h1>
+    <div id="map" aria-label="Map centered on Riyadh"></div>
+    <section class="attribute-panel" aria-label="Feature attributes">
+        <h2>Feature attributes</h2>
+        <form id="attributeForm">
+            <label for="featureName">Name</label>
+            <input id="featureName" name="Name" type="text" placeholder="Enter a feature name" required>
+            <label for="floorNo">floor_No</label>
+            <input id="floorNo" name="floor_No" type="text" placeholder="Enter a floor number">
+            <button id="saveAttributes" type="submit">Save attributes</button>
+        </form>
+        <a id="downloadGeoJson" class="download-button" href="#" download="riyadh-features.geojson">Download GeoJSON</a>
+        <p id="selectedFeature">Draw or click a feature to view its attributes.</p>
+    </section>
+    <section class="attribute-taskbar" aria-label="Selected feature attribute table">
+        <h2>Selected feature attributes</h2>
+        <table id="attributeTable" aria-label="Selected feature attribute table" hidden>
+            <thead><tr><th>Attribute</th><th>Value</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </section>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+    <script>
+        // Riyadh, Saudi Arabia
+        const map = L.map('map').setView([24.7136, 46.6753], 12);
+
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            maxZoom: 19,
+            attribution: 'Tiles &copy; <a href="https://www.esri.com/">Esri</a>, Maxar, Earthstar Geographics, and the GIS User Community'
+        }).addTo(map);
+
+        // Leaflet.draw requires editable shapes to live in a FeatureGroup.
+        const drawnItems = new L.FeatureGroup();
+        map.addLayer(drawnItems);
+
+        const drawControl = new L.Control.Draw({
+            draw: {
+                marker: true,
+                polyline: true,
+                polygon: true,
+                circle: false,
+                circlemarker: false,
+                rectangle: false
+            },
+            edit: {
+                featureGroup: drawnItems
+            }
+        });
+        map.addControl(drawControl);
+
+        let selectedLayer = null;
+        const form = document.getElementById('attributeForm');
+        const table = document.getElementById('attributeTable');
+        const tableBody = table.querySelector('tbody');
+        const selectedFeature = document.getElementById('selectedFeature');
+        const storageKey = 'orbits-map-features-v1';
+
+        function createGeoJsonDownload() {
+            const collection = drawnItems.toGeoJSON();
+            collection.features.forEach(function (feature, index) {
+                const layer = drawnItems.getLayers()[index];
+                feature.properties = layer.featureProperties || { Name: '', floor_No: '' };
+            });
+
+            const file = new Blob([JSON.stringify(collection, null, 2)], {
+                type: 'application/geo+json'
+            });
+            const url = URL.createObjectURL(file);
+            const downloadLink = document.getElementById('downloadGeoJson');
+            const oldUrl = downloadLink.dataset.objectUrl;
+            if (oldUrl) URL.revokeObjectURL(oldUrl);
+            downloadLink.href = url;
+            downloadLink.dataset.objectUrl = url;
+        }
+
+        document.getElementById('downloadGeoJson').addEventListener('click', function (event) {
+            if (drawnItems.getLayers().length === 0) {
+                event.preventDefault();
+                selectedFeature.textContent = 'Draw at least one feature before downloading GeoJSON.';
+                return;
+            }
+            createGeoJsonDownload();
+        });
+
+        function saveFeatures() {
+            const collection = drawnItems.toGeoJSON();
+            collection.features.forEach(function (feature, index) {
+                const layer = drawnItems.getLayers()[index];
+                feature.properties = layer.featureProperties || { Name: '', floor_No: '' };
+            });
+            try {
+                localStorage.setItem(storageKey, JSON.stringify(collection));
+            } catch (error) {
+                selectedFeature.textContent = 'Could not save map data in this browser.';
+            }
+        }
+
+        function showAttributes(layer, openPopup) {
+            selectedLayer = layer;
+            const attributes = layer.featureProperties || { Name: '', floor_No: '' };
+            document.getElementById('featureName').value = attributes.Name || '';
+            document.getElementById('floorNo').value = attributes.floor_No || '';
+            selectedFeature.textContent = 'Selected feature: ' + (attributes.Name || 'Unnamed feature');
+            tableBody.replaceChildren();
+            ['Name', 'floor_No'].forEach(function (key) {
+                const row = document.createElement('tr');
+                const nameCell = document.createElement('th');
+                const valueCell = document.createElement('td');
+                nameCell.textContent = key;
+                valueCell.textContent = attributes[key] || '';
+                row.append(nameCell, valueCell);
+                tableBody.appendChild(row);
+            });
+            table.hidden = false;
+            layer.bindPopup('<strong>' + escapeHtml(attributes.Name || 'Unnamed feature') +
+                '</strong><br>floor_No: ' + escapeHtml(attributes.floor_No || ''));
+            if (openPopup) layer.openPopup();
+        }
+
+        function escapeHtml(value) {
+            return String(value).replace(/[&<>"']/g, function (character) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character];
+            });
+        }
+
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            if (!selectedLayer) {
+                selectedFeature.textContent = 'Draw or click a feature before saving attributes.';
+                return;
+            }
+            selectedLayer.featureProperties = {
+                Name: document.getElementById('featureName').value.trim(),
+                floor_No: document.getElementById('floorNo').value.trim()
+            };
+            saveFeatures();
+            showAttributes(selectedLayer, true);
+        });
+
+        // Restore saved drawings and their attributes from this browser.
+        try {
+            const savedFeatures = JSON.parse(localStorage.getItem(storageKey) || '{"type":"FeatureCollection","features":[]}');
+            L.geoJSON(savedFeatures, {
+                onEachFeature: function (feature, layer) {
+                    layer.featureProperties = feature.properties || { Name: '', floor_No: '' };
+                    drawnItems.addLayer(layer);
+                }
+            });
+        } catch (error) {
+            localStorage.removeItem(storageKey);
+        }
+
+        map.on(L.Draw.Event.CREATED, function (event) {
+            event.layer.featureProperties = { Name: '', floor_No: '' };
+            drawnItems.addLayer(event.layer);
+            showAttributes(event.layer, false);
+            saveFeatures();
+            document.getElementById('featureName').focus();
+        });
+
+        drawnItems.on('click', function (event) {
+            showAttributes(event.layer, true);
+        });
+
+        map.on(L.Draw.Event.EDITED, saveFeatures);
+        map.on(L.Draw.Event.DELETED, saveFeatures);
+
+        window.addEventListener('resize', function () {
+            map.invalidateSize({ pan: false });
+        });
+    </script>
+</body>
+</html>
